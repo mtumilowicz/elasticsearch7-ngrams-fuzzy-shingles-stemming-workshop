@@ -18,6 +18,24 @@
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-stemmer-tokenfilter.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-porterstem-tokenfilter.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-snowball-tokenfilter.html
+    * fuzzy
+        * https://en.wikipedia.org/wiki/Levenshtein_distance
+        * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html
+        * https://www.elastic.co/blog/found-fuzzy-search
+        * https://kb.objectrocket.com/elasticsearch/how-to-use-fuzzy-query-matches-in-elasticsearch
+        * https://dev.to/hernamvel/understanding-and-tuning-fuzzy-queries-in-elasticsearch-by-example-1ci3
+        
+# introduction
+Searching natural language is inherently imprecise. Since computers can't comprehend natural language, 
+there are a plethora of approaches to search, each with its own advantages and drawbacks. 
+Lucene, the technology underlying Elasticsearch, is a swiss-army knife composed of many text processing 
+tools. Each tool within it is a heuristic, an algorithmic shortcut in lieu of true linguistic 
+comprehension. Some of these tools, like the Snowball stemmer and the Metaphone phonetic analyzer, are 
+quite sophisticated. These tools mimic grammatical and phonetic aspects of language comprehension 
+respectively. Other tools are very basic, like the prefix query type, which simply matches the beginning 
+letters of words. Fuzzy queries sit somewhere in the middle of this toolchest in terms of sophistication; 
+they find words that need at most a certain number of character modifications, known as 'edits', to match 
+the query.
 
 ## ngram
 * ngrams are a way of splitting a token into multiple subtokens for each part of a word
@@ -190,11 +208,67 @@ root or stem of the word
     * The stemmer will only be able to stem words it has in the dictionary
     
 ## fuzzy
-* https://en.wikipedia.org/wiki/Levenshtein_distance
-* https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html
-* https://www.elastic.co/blog/found-fuzzy-search
-* https://kb.objectrocket.com/elasticsearch/how-to-use-fuzzy-query-matches-in-elasticsearch
-* https://qbox.io/blog/elasticsearch-optimization-fuzziness-performance
-* https://dev.to/hernamvel/understanding-and-tuning-fuzzy-queries-in-elasticsearch-by-example-1ci3
+* the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or 
+substitutions) required to change one word into the other
+
+* fuzzy-query
+    * Returns documents that contain terms similar to the search term, as measured by a Levenshtein edit distance
+    * An edit distance is the number of one-character changes needed to turn one term into another
+        * Changing a character (box → fox)
+        * Removing a character (black → lack)
+        * Inserting a character (sic → sick)
+        * Transposing two adjacent characters (act → cat)
+    * fuzzy query creates a set of all possible variations, or expansions, of the search term within a specified edit 
+    distance
+        * fuzzy query: The elasticsearch fuzzy query type should generally be avoided. Acts much like a term query. 
+        Does not analyze the query text first
+        * The query then returns exact matches for each expansion
+    * parameters
+        * value
+            * (Required, string) Term you wish to find in the provided <field>.
+        * fuzziness
+            * (Optional, string) Maximum edit distance allowed for matching.
+            * 2 - maximum allowed Levenshtein Edit Distance (or number of edits)
+                * Larger differences are far more expensive to compute efficiently and are not processed by Lucene
+            * AUTO
+                * 0..2 - Must match exactly
+                * 3..5 - One edit allowed
+                * `>5` - Two edits allowed
+        * max_expansions (Optional, integer) Maximum number of variations created. Defaults to 50.
+        * prefix_length (Optional, integer) Number of beginning characters left unchanged when creating expansions. Defaults to 0.
+* match-query
+    * fuzziness(Optional, string) Maximum edit distance allowed for matching
+* misspellings problems
+* Damerau-Levenshtein distance formula is a modification of the classic Levenshtein distance formula, altering it by 
+adding transposition as a valid operation.
+* The utility of transpositions can be seen in the case of comparing the strings 'aex' and 'axe'. 
+    * When using the classic Levenshtein distance formula, 'aex' is not one, but two edits away; the 'e' 
+    must be deleted, after which a new 'e' is inserted in the proper place, while in Damerau-Levenshtein, 
+    a single operation, swapping the 'e' and the 'x', suffices
+    *  using classic Levenshtein would mean that 'aex' is as far away from 'axe' as 'faxes' is; an example showing why 
+    Damerau-Levenshtein makes greater intuitive sense in most cases
+* This also means that if using say, a snowball analyzer, a fuzzy search for 'running', will be stemmed 
+to 'run', but will not match the misspelled word 'runninga', which stems to 'runninga', because 
+'run' is more than 2 edits away from 'runninga'. This can cause quite a bit of confusion, and for 
+this reason, it often makes sense only to use the simple analyzer on text intended for use with 
+fuzzy queries, possibly disabling synonyms as well
+    ![alt text](img/snowball_fuzzy.png)
+
+* The problem is, sometimes users make mistakes. If you’re only querying for exact matches, simple typos 
+and spelling errors can lead to empty results– not an ideal user experience
+
+* grocery store example
+
+* example for fuzziness
+    * doc1: "i will marry you because I love you"
+    * doc2: "i will live with harry"
+    * doc2: "i'm sorry for your loss"
+    * "value": "harry", "fuziness": 1
+        * Levenshtein('harry', 'marry') = 1 in doc1
+        * Levenshtein('harry', 'harry') = 0 in doc2
+        * Levenshtein('harry', 'sorry') = 2 in doc2
+
 * https://medium.com/@neelambuj2/an-approach-to-highly-intuitive-fuzzy-search-in-elasticsearch-with-typo-handling-exact-matches-a79a795d36f8
 * https://blog.mimacom.com/autocomplete-elasticsearch-part1/
+* https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
+    * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
