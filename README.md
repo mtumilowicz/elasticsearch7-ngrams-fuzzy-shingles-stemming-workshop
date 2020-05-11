@@ -24,6 +24,9 @@
         * https://www.elastic.co/blog/found-fuzzy-search
         * https://kb.objectrocket.com/elasticsearch/how-to-use-fuzzy-query-matches-in-elasticsearch
         * https://dev.to/hernamvel/understanding-and-tuning-fuzzy-queries-in-elasticsearch-by-example-1ci3
+        * https://medium.com/@neelambuj2/an-approach-to-highly-intuitive-fuzzy-search-in-elasticsearch-with-typo-handling-exact-matches-a79a795d36f8
+        * https://blog.mimacom.com/autocomplete-elasticsearch-part1/
+        
         
 # introduction
 Searching natural language is inherently imprecise. Since computers can't comprehend natural language, 
@@ -36,6 +39,24 @@ respectively. Other tools are very basic, like the prefix query type, which simp
 letters of words. Fuzzy queries sit somewhere in the middle of this toolchest in terms of sophistication; 
 they find words that need at most a certain number of character modifications, known as 'edits', to match 
 the query.
+
+| Method                                  |  Difficulty  |
+| --------------------------------------- | ------------ |
+| Prefix and Match Phrase Prefix Query    |     Easy     |
+| Index-Time Search-as-You-Type           | Intermediate |
+| Completion Suggester                    |   Advanced   |
+
+* The autocomplete functionality has many names; some also refer to it as search as you type or type-ahead search
+
+* We have to distinguish between
+  * Prefix Query
+  * Match Phrase Prefix Query
+  * The Prefix Query goes on not analyzed text.
+    * works only on not analyzed text. Therefore we have to use the keyword text field of name
+    * Now I use the prefix Eli, and I get only Elisabeth as a result. What if this was a simple typo and initially I 
+    was searching for Elvis? You can see the limit of a Prefix Query here. It allows no fuzziness.
+  * The Match Phrase Query is a full-text search and therefore analyzes text.
+    * 
 
 ## ngram
 * ngrams are a way of splitting a token into multiple subtokens for each part of a word
@@ -211,6 +232,11 @@ root or stem of the word
 * the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or 
 substitutions) required to change one word into the other
 
+* vs ngrams
+    * After introducing typo’s , document containing “shoiab” will not be found because the search term 
+    doesn’t matches any indexed token.
+    * Solution: Using fuzziness
+
 * fuzzy-query
     * Returns documents that contain terms similar to the search term, as measured by a Levenshtein edit distance
     * An edit distance is the number of one-character changes needed to turn one term into another
@@ -268,7 +294,23 @@ and spelling errors can lead to empty results– not an ideal user experience
         * Levenshtein('harry', 'harry') = 0 in doc2
         * Levenshtein('harry', 'sorry') = 2 in doc2
 
-* https://medium.com/@neelambuj2/an-approach-to-highly-intuitive-fuzzy-search-in-elasticsearch-with-typo-handling-exact-matches-a79a795d36f8
-* https://blog.mimacom.com/autocomplete-elasticsearch-part1/
+* often combined with prefix search
+    ```
+    GET employees/_search
+    {
+      "query": {
+        "bool": {
+          "should": [
+            { "prefix": { "name.keyword": "Eli" } },
+            { "fuzzy": { "name.keyword": { "value": "Eli", "fuzziness": 2, "prefix_length": 0 } } }
+          ]
+        }
+      }
+    }
+    ```
+* Queries like the term prefix or fuzzy queries are low-level queries that have no analysis phase
+    * important to remember that the term query looks in the inverted index for the exact term only
+        * lowercase cannot fild with uppercase
+
 * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
     * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
