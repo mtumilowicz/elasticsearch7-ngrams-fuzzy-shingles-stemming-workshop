@@ -7,7 +7,7 @@
                 "filter": {
                     "autocomplete_filter": {
                         "type": "edge_ngram",
-                        "min_gram": 1,
+                        "min_gram": 2,
                         "max_gram": 5
                     }
                 },
@@ -101,4 +101,14 @@ POST /grocery/_create/5
             }
           }
         }
-    * starts with 
+    * search cho b
+        GET /grocery/_search
+        {
+          "query": {
+            "bool": {
+              "filter": {
+                "match": { "name": "cho b" } // maybe term?
+              }
+            }
+          }
+        }

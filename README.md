@@ -104,8 +104,6 @@
     * good practice to set upper limit
         * for example if search for text with `length > 8` - full text search instead of terms 
     
-* GET /test_index/doc/1/_termvector?fields=text_field
-    * to show generated ngrams
     * `min_gram`
         * the smallest ngrams you want to generate
         * defaults: 1
@@ -114,92 +112,83 @@
         * defaults: 2
 
 ## shingles
-* https://www.elastic.co/guide/en/elasticsearch/reference/current/search-as-you-type.html
+"one large ostrich egg or 25 smaller chicken eggs"
+* ngrams at the token level instead of the character level
+* example
+    * token: "please divide this sentence into shingles" might be tokenized into shingles 
+    * bigrams: "please divide", "divide this", "this sentence", "sentence into", and "into shingles"
+
 * `index-phrases` option on a text field
     * If enabled, two-term word combinations (shingles) are indexed into a separate field.
     * This allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
     
-* it creates combinations of tokens as a single token
-    * the sentence "please divide this sentence into shingles" might be tokenized into shingles 
-    * "please divide", "divide this", "this sentence", "sentence into", and "into shingles"
 
-* The shingles token filter is basically ngrams at
-  the token level instead of the character level
-* so if you had the text “foo bar baz”
-    * min_shingle_size of 2 and a max_shingle_size of 3
-    * foo, foo bar, foo bar baz, bar, bar baz, baz
-* This is because by default the shingles
-  filter includes the original tokens
-* I'm a fan of shingles because they give you both exact-match and phrase matching. 
-    * An exact match will hit all the shingled tokens and boost the score appropriately, while other 
-    queries can still hit parts of the phrase. 
-    * And since shingles are stored as tokens in the index, their TF-ID is calculated and rarer phrase 
-    matches enjoy a bigger score boost than more common phrases.
+* min_shingle_size
+* max_shingle_size
+* give you both exact-match and phrase matching
+    * exact match will hit all the shingled tokens and boost the score appropriately, while other 
+    queries can still hit parts of the phrase
+    * shingles are stored as tokens in the index, their TF-ID is calculated and rarer phrase 
+    matches enjoy a bigger score boost than more common phrases
 
-* give you both exact-match and phrase matching. An exact match will hit all the shingled tokens and boost the score 
-appropriately, while other queries can still hit parts of the phrase
-* Shingles effectively give you the ability to pre-bake phrase matching. 
-    * By building phrases into the index, you can avoid creating phrases at query time and save 
-    some processing time/speed
-* The downside is that you have larger indices
+* give you the ability to pre-bake phrase matching. 
+    * build phrases into the index
+        * avoid creating phrases at query time and save some processing time/speed
+* downside is that you have larger indices
 
 ## stemming
-* stemming is the act of reducing a word to its base or root word
-* This is extremely handy when searching because it means you’re able to match words sharing the 
-root or stem of the word
-* If the word is “administrations,” the root of the word is “administr.”
-    * This allows you to match all of the other roots for this word, like “administrator,” “administration,” 
-    and “administrate.” 
-* Stemming is a powerful way of making your searches more flexible than rigid exact matching.
-* Stemming is the process of reducing a word to its root form. 
-    * This ensures variants of a word match during a search.
-* In some cases, the root form of a stemmed word may not be a real word. 
-    * For example, jumping and jumpiness can both be stemmed to jumpi
-
-* Algorithmic stemmers, which stem words based on a set of rules
-    * Algorithmic stemmers apply a series of rules to each word to reduce it to its root form. 
-    * For example, an algorithmic stemmer for English may remove the -s and -es prefixes from 
-    the end of plural words
-    * Algorithmic stemmers have a few advantages:
-        * They require little setup and usually work well out of the box.
-        * They use little memory.
-        * They are typically faster than dictionary stemmers.
-    * most algorithmic stemmers only alter the existing text of a word. 
-        * This means they may not work well with irregular words that don’t contain their root form, such as:
-            * be, are, and am
-            * mouse and mice
-            * foot and feet
-    * types
-        * stemmer, which provides algorithmic stemming for several languages, some with additional variants.
-            * uses the porter stemming algorithm for English
-        * kstem, a stemmer for English that combines algorithmic stemming with a built-in dictionary.
-        * porter_stem, our recommended algorithmic stemmer for English.
-            * based on the Porter stemming algorithm
-            * tends to stem more aggressively
-        * snowball, which uses Snowball-based stemming rules for several languages
-            * using a Snowball-generated stemmer
-* Dictionary stemmers, which stem words by looking them up in a dictionary
-    * look up words in a provided dictionary, replacing unstemmed word variants with stemmed words 
-    from the dictionary
-    * stemmers are well suited for
-      * Stemming irregular words
-        * Discerning between words that are spelled similarly but not related conceptually, such as:
-      * organ and organization
-        * broker and broken
-    * algorithmic stemmers typically outperform dictionary stemmers. 
-        * This is because dictionary stemmers have the following disadvantages:
-            * Dictionary quality
-                * A dictionary stemmer is only as good as its dictionary. 
-                * To work well, these dictionaries must include a significant number of words, be updated 
-                regularly, and change with language trends. 
-                * Often, by the time a dictionary has been made available, it’s incomplete and some of its 
-                entries are already outdated.
-            * Size and performance
-                * Dictionary stemmers must load all words, prefixes, and suffixes from its dictionary into 
-                memory. 
-                * This can use a significant amount of RAM. 
-                * Low-quality dictionaries may also be less efficient with prefix and suffix removal, which 
-                * can slow the stemming process significantly.
+* process of reducing a word to its root form
+* extremely handy when searching - able to match words sharing the root or stem of the word
+    * make your searches more flexible than rigid exact matching
+* example
+    * word: “administrations”
+    * root: “administr.”
+    * allows you to match: "administrator", "administration", "administrate"
+* root form may not be a real word
+* categories
+    * Algorithmic stemmers
+        * based on a set of rules
+        * example - for English may remove the -s and -es from the end of plural words
+        * advantages:
+            * little setup and usually work well out of the box
+            * little memory
+            * typically faster than dictionary stemmers
+        * only alter the existing text of a word
+            * problem with irregular words
+                * be, are, and am
+                * mouse and mice
+                * foot and feet
+        * types
+            * stemmer, which provides algorithmic stemming for several languages, some with additional variants.
+                * uses the porter stemming algorithm for English
+            * kstem, a stemmer for English that combines algorithmic stemming with a built-in dictionary.
+            * porter_stem, our recommended algorithmic stemmer for English.
+                * based on the Porter stemming algorithm
+                * tends to stem more aggressively
+            * snowball, which uses Snowball-based stemming rules for several languages
+                * using a Snowball-generated stemmer
+    * Dictionary stemmers, which stem words by looking them up in a dictionary
+        * look up words in a provided dictionary, replacing unstemmed word variants with stemmed words 
+        from the dictionary
+        * stemmers are well suited for
+          * Stemming irregular words
+            * Discerning between words that are spelled similarly but not related conceptually, such as:
+          * organ and organization
+            * broker and broken
+        * algorithmic stemmers typically outperform dictionary stemmers. 
+            * This is because dictionary stemmers have the following disadvantages:
+                * Dictionary quality
+                    * A dictionary stemmer is only as good as its dictionary. 
+                    * To work well, these dictionaries must include a significant number of words, be updated 
+                    regularly, and change with language trends. 
+                    * Often, by the time a dictionary has been made available, it’s incomplete and some of its 
+                    entries are already outdated.
+                * Size and performance
+                    * Dictionary stemmers must load all words, prefixes, and suffixes from its dictionary into 
+                    memory. 
+                    * This can use a significant amount of RAM. 
+                    * Low-quality dictionaries may also be less efficient with prefix and suffix removal, which 
+                    * can slow the stemming process significantly.
 ### Algorithmic stemming
 * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-snowball-tokenfilter.html
 * Algorithmic stemming is applied by using a formula or set of rules for each token in
