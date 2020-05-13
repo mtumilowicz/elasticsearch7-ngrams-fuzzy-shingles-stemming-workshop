@@ -10,6 +10,7 @@
         * https://medium.com/@ashishstiwari/what-should-be-the-value-of-max-gram-and-min-gram-in-elasticsearch-f091404c9a14
         * https://kb.objectrocket.com/elasticsearch/how-to-implement-autocomplete-with-edge-n-grams-in-elasticsearch
     * shingles
+        * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-as-you-type.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-shingle-tokenfilter.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/index-phrases.html
         * https://www.elastic.co/blog/searching-with-shingles
@@ -26,7 +27,9 @@
         * https://dev.to/hernamvel/understanding-and-tuning-fuzzy-queries-in-elasticsearch-by-example-1ci3
         * https://medium.com/@neelambuj2/an-approach-to-highly-intuitive-fuzzy-search-in-elasticsearch-with-typo-handling-exact-matches-a79a795d36f8
         * https://blog.mimacom.com/autocomplete-elasticsearch-part1/
-        
+    * suggester
+        * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
+        * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
         
 # introduction
 Searching natural language is inherently imprecise. Since computers can't comprehend natural language, 
@@ -125,6 +128,7 @@ in different manner than other European languages
 * compare with: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
 
 ## shingles
+* https://www.elastic.co/guide/en/elasticsearch/reference/current/search-as-you-type.html
 * `index-phrases` option on a text field
     * If enabled, two-term word combinations (shingles) are indexed into a separate field.
     * This allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
@@ -312,5 +316,31 @@ and spelling errors can lead to empty results– not an ideal user experience
     * important to remember that the term query looks in the inverted index for the exact term only
         * lowercase cannot fild with uppercase
 
-* https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
-    * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
+### suggesters
+* Suggests similar looking terms based on a provided text by using a suggester. 
+* Parts of the suggest feature are still under development.
+```
+POST twitter/_search
+{
+  "suggest" : {
+    "my-suggestion" : {
+      "text" : "tring out Elasticsearch",
+      "term" : {
+        "field" : "message"
+      }
+    }
+  }
+}
+```
+* term-suggester
+    * suggests terms based on edit distance
+    * suggested terms are provided per analyzed suggest text token
+    * params
+        * max_edits
+        * prefix_length
+        * string_distance
+* completion-suggester
+    * provides auto-complete/search-as-you-type functionality
+    * It is not meant for spell correction or did-you-mean functionality like the term suggester
+    * uses data structures that enable fast lookups, but are costly to build and are stored in-memory
+    * supports fuzzy queries
