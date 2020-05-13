@@ -112,25 +112,6 @@
     * `max_gram`
         * the largest ngrams you want to generate
         * defaults: 2
-    ```
-          "analysis": {
-             "filter": {
-                "ngram_filter": {
-                   "type": "nGram",
-                   "min_gram": 4,
-                   "max_gram": 4
-                }
-             }
-    ```
-
-* A common use of ngrams is for autocomplete, and users tend to expect to see suggestions after only a few keystrokes
-* Generating a lot of ngrams will take up a lot of space and use more CPU cycles for searching, so you should be careful not to set mingram any lower, and maxgram any higher, than you really need
-* autocomplete implemented - TL;DR: General-purpose Autocomplete
-    * https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-edgengram-tokenizer.html
-        * Below is an example of how to set up a field for search-as-you-type
-    * https://kb.objectrocket.com/elasticsearch/how-to-implement-autocomplete-with-edge-n-grams-in-elasticsearch
-        * grocery shop
-* compare with: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
 
 ## shingles
 * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-as-you-type.html
