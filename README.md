@@ -32,24 +32,26 @@
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
         
 # introduction
-Searching natural language is inherently imprecise. Since computers can't comprehend natural language, 
-there are a plethora of approaches to search, each with its own advantages and drawbacks. 
-Lucene, the technology underlying Elasticsearch, is a swiss-army knife composed of many text processing 
-tools. Each tool within it is a heuristic, an algorithmic shortcut in lieu of true linguistic 
-comprehension. Some of these tools, like the Snowball stemmer and the Metaphone phonetic analyzer, are 
-quite sophisticated. These tools mimic grammatical and phonetic aspects of language comprehension 
-respectively. Other tools are very basic, like the prefix query type, which simply matches the beginning 
-letters of words. Fuzzy queries sit somewhere in the middle of this toolchest in terms of sophistication; 
-they find words that need at most a certain number of character modifications, known as 'edits', to match 
-the query.
+* computers can't comprehend natural language
+* searching natural language is inherently imprecise
+* Lucene is composed of many text processing tools
+    * each tool - heuristic, an algorithmic shortcut in lieu of true linguistic comprehension
+    * example: prefix query type is very basic 
+        * simply matches the beginning letters of words
+    * example: Fuzzy queries - somewhere in the middle in terms of sophistication 
+        * find words that need at most a certain number of 'edits', to match the query
+    * example: Snowball stemmer and the Metaphone phonetic analyzer, are quite sophisticated
+        * mimic grammatical and phonetic aspects of language
+    * example: autocomplete functionality (other names: search as you type, type-ahead search)
 
-| Method                                  |  Difficulty  |
-| --------------------------------------- | ------------ |
-| Prefix and Match Phrase Prefix Query    |     Easy     |
-| Index-Time Search-as-You-Type           | Intermediate |
-| Completion Suggester                    |   Advanced   |
+* hierarchy overview
 
-* The autocomplete functionality has many names; some also refer to it as search as you type or type-ahead search
+    | Method                                  |  Difficulty  |
+    | --------------------------------------- | ------------ |
+    | Prefix and Match Phrase Prefix Query    |     Easy     |
+    | Index-Time Search-as-You-Type           | Intermediate |
+    | Completion Suggester                    |   Advanced   |
+
 
 * We have to distinguish between
   * Prefix Query
@@ -62,61 +64,64 @@ the query.
     * 
 
 ## ngram
-* ngrams are a way of splitting a token into multiple subtokens for each part of a word
-* Michal
-    * 1-grams: m i c h a l
-    * bigrams: mi ic ch ha al
-    * trigrams: mic ich cha hal
-* N-grams are like a sliding window that moves across the word - a continuous sequence of characters 
-of the specified length
-* `min_gram`
-    * the smallest ngrams you want to generate
-    * defaults: 1
-* `max_gram`
-    * the largest ngrams you want to generate
-    * defaults: 2
-
-* say you’re looking for the incorrectly spelled word “mihal”
+* splitting a token into multiple subtokens
+* sliding window that moves across the word - continuous sequence of characters of the specified length
+* example
+    * token: michal
+    * 1-grams: m, i, c, h, a, l
+    * bigrams: mi, ic, ch, ha, al
+    * trigrams: mic, ich, cha, hal
+* how it could boost searching
+    * incorrectly spelled word: “mihal”
     * use fuzzy query (specify an edit distance for words to check matches)
+        * will be discussed later
     * use ngrams
         * Bigrams for “michal”: mi ic ch ha al
         * Bigrams for “mihal”: mi ih ha al
         * may be drawback: more words than intended will match the original
+* use-case
+    * analyze text when the language is not known beforehand
+        * or handle multiple languages with a single analyzer
+    * analyze text when the language combines words in different manner than other European languages 
+        * no spaces between words
+        * have long compound words, like German
 
-* allow to analyze text when the language is not known beforehand or languages that combine words 
-in different manner than other European languages 
-  * no spaces between words
-  * have long compound words, like German
-  * handle multiple languages with a single analyzer
-* edge ngrams
-    * Now, it’s obvious that no user is going to search for “Database” using the “ase” chunk of 
-    characters at the end of the word. 
-        * That’s where edge n-grams come into play. 
-        * Edge n-grams only index the n-grams that are located at the beginning of the word
-    * ngrams only from the beginning
-    * helpful for searching words with prefix without prefix query
-    * For many applications, only ngrams that start at the beginning of words are needed
-    * Usually we recommend using the same analyzer at index time and at search time. 
-        * In the case of the edge_ngram tokenizer, the advice is different. 
-        * It only makes sense to use the edge_ngram tokenizer at index time, to ensure that 
-        partial words are available for matching in the index. 
-        * At search time, just search for the terms the user has typed in
-    * if users will try to search more than 10 length, We simply search with full text search query 
-    instead of terms. 
-        * This is one of the way how we tackled.
+### edge ngrams
+* no user will search for “Database” using the “ase” chunk of characters 
+    * that’s where edge n-grams come into play 
+    * edge n-grams = prefixes
+* example
+    * token: michal
+    * edge n-grams: m, mi, mic, mich, micha, michal
+* helpful for searching words with prefix
+    * prefix query is time consuming
+* for many applications, only ngrams that start at the beginning of words are needed
+* index vs search analyzer
+    * standard approach: same analyzer at index time and at search time 
+    * in the case of the edge ngram tokenizer - the advice is different 
+        * ensure that prefixes are available for matching in the index - edge_ngram tokenizer at index time
+        * at search time, just search for the terms the user has typed in - standard tokenizer at search time
+    * good practice to set upper limit
+        * for example if search for text with `length > 8` - full text search instead of terms 
+    
 * GET /test_index/doc/1/_termvector?fields=text_field
     * to show generated ngrams
-
-```
-      "analysis": {
-         "filter": {
-            "ngram_filter": {
-               "type": "nGram",
-               "min_gram": 4,
-               "max_gram": 4
-            }
-         }
-```
+    * `min_gram`
+        * the smallest ngrams you want to generate
+        * defaults: 1
+    * `max_gram`
+        * the largest ngrams you want to generate
+        * defaults: 2
+    ```
+          "analysis": {
+             "filter": {
+                "ngram_filter": {
+                   "type": "nGram",
+                   "min_gram": 4,
+                   "max_gram": 4
+                }
+             }
+    ```
 
 * A common use of ngrams is for autocomplete, and users tend to expect to see suggestions after only a few keystrokes
 * Generating a lot of ngrams will take up a lot of space and use more CPU cycles for searching, so you should be careful not to set mingram any lower, and maxgram any higher, than you really need
