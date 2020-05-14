@@ -148,64 +148,37 @@
 * categories
     * Algorithmic stemmers
         * based on a set of rules
-        * example - for English may remove the -s and -es from the end of plural words
-        * advantages:
+        * example - remove the -s and -es from the end of plural words
+        * advantages
             * little setup and usually work well out of the box
             * little memory
             * typically faster than dictionary stemmers
-        * only alter the existing text of a word
+        * disadvantages    
             * problem with irregular words
                 * be, are, and am
                 * mouse and mice
                 * foot and feet
         * types
-            * stemmer, which provides algorithmic stemming for several languages, some with additional variants.
-                * uses the porter stemming algorithm for English
-            * kstem, a stemmer for English that combines algorithmic stemming with a built-in dictionary.
-            * porter_stem, our recommended algorithmic stemmer for English.
-                * based on the Porter stemming algorithm
-                * tends to stem more aggressively
-            * snowball, which uses Snowball-based stemming rules for several languages
-                * using a Snowball-generated stemmer
-    * Dictionary stemmers, which stem words by looking them up in a dictionary
-        * look up words in a provided dictionary, replacing unstemmed word variants with stemmed words 
-        from the dictionary
-        * stemmers are well suited for
-          * Stemming irregular words
-            * Discerning between words that are spelled similarly but not related conceptually, such as:
-          * organ and organization
-            * broker and broken
-        * algorithmic stemmers typically outperform dictionary stemmers. 
-            * This is because dictionary stemmers have the following disadvantages:
-                * Dictionary quality
-                    * A dictionary stemmer is only as good as its dictionary. 
-                    * To work well, these dictionaries must include a significant number of words, be updated 
-                    regularly, and change with language trends. 
-                    * Often, by the time a dictionary has been made available, it’s incomplete and some of its 
-                    entries are already outdated.
-                * Size and performance
-                    * Dictionary stemmers must load all words, prefixes, and suffixes from its dictionary into 
-                    memory. 
-                    * This can use a significant amount of RAM. 
-                    * Low-quality dictionaries may also be less efficient with prefix and suffix removal, which 
-                    * can slow the stemming process significantly.
-### Algorithmic stemming
-* https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-snowball-tokenfilter.html
-* Algorithmic stemming is applied by using a formula or set of rules for each token in
-  order to stem it
-* the snowball filter, the porter stem filter, and the kstem filter
-    * differences in how aggressive they are with regard to stemming
-    * By aggressive we mean that the more aggressive stemmers chop off more
-      of the word than the less aggressive stemmers
-### Stemming with dictionaries
-* https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-hunspell-tokenfilter.html
-* Sometimes algorithmic stemmers can stem words in a strange way because they don’t
-  know any of the underlying language
-* Because of this, there’s a more accurate way to
-  stem words that uses a dictionary of words
-* hunspell token filter, combined with a dictionary, to handle the stemming
-    * quality of the stemming is directly related to the quality of the dictionary that you use.
-    * The stemmer will only be able to stem words it has in the dictionary
+            * stemmer - porter stemming algorithm, several languages
+            * kstem - algorithmic stemming + built-in dictionary
+            * porter_stem - porter stemming algorithm, recommended for English
+            * snowball - Snowball-based stemming rules, several languages
+            * differences in how aggressive they stem
+                * more aggressive = chop off more
+    * Dictionary stemmers
+        * stem words by looking in a dictionary
+        * advantages
+            * more accurate way to stem words
+            * irregular words
+            * distinguishes similar (in context of spelling) words but not related conceptually
+                * example: organ and organization, broker and broken
+        * disadvantages
+            * stemmer is only as good as its dictionary
+                * must include a significant number of words, be updated regularly, change with language trends 
+            * use a significant amount of RAM
+                * can slow the stemming process significantly
+        * types
+            * hunspell
     
 ## fuzzy
 * the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or 
