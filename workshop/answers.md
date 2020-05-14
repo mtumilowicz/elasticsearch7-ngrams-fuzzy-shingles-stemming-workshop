@@ -112,6 +112,7 @@ POST /grocery/_create/5
             }
           }
         }
+
 ## shingles
 1. prepare index
     PUT /cookbook
@@ -168,3 +169,55 @@ POST /cookbook/_create/3
         }
       }
     }
+
+## stemming
+1. prepare index
+    PUT /twitter
+    {
+        "settings": {
+            "analysis": {
+                "analyzer": {
+                    "stem_analyzer": {
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [ "lowercase", "stop", "porter_stem"]
+                    }
+                }
+            }
+        },
+        "mappings": {
+            "properties": {
+                "author": { "type": "keyword" },
+                "tweet": { "type": "text", "analyzer": "stem_analyzer" }
+            }
+        }
+    }
+1. verify stemming analyzer
+POST twitter/_analyze
+{
+  "analyzer": "stem_analyzer",
+  "text": "in linguistic morphology and information retrieval, stemming is the process of reducing inflected words to their word stem, base or root form—generally a written word form"
+}
+1. populate index
+POST /twitter/_create/1
+{
+    "author": "realDonaldTrump",
+    "tweet": "Russian leaders are publicly celebrating Obama’s reelection. They can't wait to see how flexible Obama will be now"
+}
+POST /twitter/_create/2
+{
+    "author": "realDonaldTrump",
+    "tweet": "Sorry losers and haters, but my I.Q. is one of the highest - and you all know it! Please don't feel so stupid or insecure, it's not your fault"
+}
+1. check stemming
+    GET /twitter/_termvectors/1?fields=tweet
+1. search for 'celebrate elected'
+    GET /twitter/_search
+    {
+      "query": {
+        "match": {
+          "tweet": "celebrate elected"
+        }
+      }
+    }
+## fuzzy
