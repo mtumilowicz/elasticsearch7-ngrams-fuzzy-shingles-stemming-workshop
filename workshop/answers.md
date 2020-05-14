@@ -112,3 +112,59 @@ POST /grocery/_create/5
             }
           }
         }
+## shingles
+1. prepare index
+    PUT /cookbook
+    {
+        "mappings": {
+            "properties": {
+                "name": { "type": "text" },
+                "recipe": { "type": "search_as_you_type"}
+            }
+        }
+    }
+1. populate index
+POST /cookbook/_create/1
+{
+    "name": "scrambled eggs",
+    "recipe": "one large ostrich egg or 25 smaller chicken eggs"
+}
+POST /cookbook/_create/2
+{
+    "name": "hot wings",
+    "recipe": "ostrich meat and chicken wings"
+}
+POST /cookbook/_create/3
+{
+    "name": "strange dish",
+    "recipe": "ostrich beak, chicken liver, snake eggs"
+}
+1. search for phrase 'ostrich egg'
+    GET /cookbook/_search
+    {
+      "query": {
+        "multi_match": {
+          "query": "ostrich egg",
+          "type": "bool_prefix",
+          "fields": [
+            "recipe", // switch it off
+            "recipe._2gram",
+            "recipe._3gram"
+          ]
+        }
+      }
+    }
+1. search for phrase 'ostrich e'
+    GET /cookbook/_search
+    {
+      "query": {
+        "multi_match": {
+          "query": "ostrich egg",
+          "type": "bool_prefix",
+          "fields": [
+            "recipe._2gram",
+            "recipe._3gram"
+          ]
+        }
+      }
+    }

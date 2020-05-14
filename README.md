@@ -135,7 +135,10 @@
     * build phrases into the index
         * avoid creating phrases at query time and save some processing time/speed
 * downside is that you have larger indices
-
+* bool_prefix
+    * each term except the last is used in a term query 
+    * last term is used in a prefix query
+    
 ## stemming
 * process of reducing a word to its root form
 * extremely handy when searching - able to match words sharing the root or stem of the word
