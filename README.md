@@ -184,25 +184,36 @@
             * hunspell
     
 ## fuzzy
-* the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or 
+* Levenshtein distance between two words - minimum number of single-character edits (insertions, deletions or 
 substitutions) required to change one word into the other
-
-* vs ngrams
-    * After introducing typo’s , document containing “shoiab” will not be found because the search term 
-    doesn’t matches any indexed token.
-    * Solution: Using fuzziness
-
+* Damerau-Levenshtein distance formula is a modification of the classic Levenshtein distance formula, altering it by 
+adding transposition as a valid operation.
+    * utility of transpositions
+        * compare 'aex' and 'axe'
+        * Levenshtein distance: two edits away
+        * Damerau-Levenshtein: one edit away
+        * Levenshtein: 'aex' is as far from 'axe' as 'faxes'
+            * Damerau-Levenshtein makes greater intuitive sense in most cases
+* edit distance is the number of one-character changes needed to turn one term into another
+    * changing a character (box → fox)
+    * removing a character (black → lack)
+    * inserting a character (sic → sick)
+    * transposing two adjacent characters (act → cat)
+* example for Levenshtein
+    * doc1: "i will marry you because I love you"
+    * doc2: "i will live with harry"
+    * doc3: "i'm sorry for your loss"
+    * distances
+        * Levenshtein('harry', 'marry') = 1 in doc1
+        * Levenshtein('harry', 'harry') = 0 in doc2
+        * Levenshtein('harry', 'sorry') = 2 in doc2
+* some typos cannot be solves with n-grams
 * fuzzy-query
-    * Returns documents that contain terms similar to the search term, as measured by a Levenshtein edit distance
-    * An edit distance is the number of one-character changes needed to turn one term into another
-        * Changing a character (box → fox)
-        * Removing a character (black → lack)
-        * Inserting a character (sic → sick)
-        * Transposing two adjacent characters (act → cat)
+    * returns documents that contain terms similar to the search term, as measured by a Levenshtein 
+    edit distance
     * fuzzy query creates a set of all possible variations, or expansions, of the search term within a specified edit 
     distance
-        * fuzzy query: The elasticsearch fuzzy query type should generally be avoided. Acts much like a term query. 
-        Does not analyze the query text first
+    * does not analyze the query text first
         * The query then returns exact matches for each expansion
     * parameters
         * value
@@ -220,53 +231,18 @@ substitutions) required to change one word into the other
 * match-query
     * fuzziness(Optional, string) Maximum edit distance allowed for matching
 * misspellings problems
-* Damerau-Levenshtein distance formula is a modification of the classic Levenshtein distance formula, altering it by 
-adding transposition as a valid operation.
-* The utility of transpositions can be seen in the case of comparing the strings 'aex' and 'axe'. 
-    * When using the classic Levenshtein distance formula, 'aex' is not one, but two edits away; the 'e' 
-    must be deleted, after which a new 'e' is inserted in the proper place, while in Damerau-Levenshtein, 
-    a single operation, swapping the 'e' and the 'x', suffices
-    *  using classic Levenshtein would mean that 'aex' is as far away from 'axe' as 'faxes' is; an example showing why 
-    Damerau-Levenshtein makes greater intuitive sense in most cases
-* This also means that if using say, a snowball analyzer, a fuzzy search for 'running', will be stemmed 
-to 'run', but will not match the misspelled word 'runninga', which stems to 'runninga', because 
-'run' is more than 2 edits away from 'runninga'. This can cause quite a bit of confusion, and for 
-this reason, it often makes sense only to use the simple analyzer on text intended for use with 
-fuzzy queries, possibly disabling synonyms as well
-    ![alt text](img/snowball_fuzzy.png)
-
-* The problem is, sometimes users make mistakes. If you’re only querying for exact matches, simple typos 
-and spelling errors can lead to empty results– not an ideal user experience
-
-* grocery store example
-
-* example for fuzziness
-    * doc1: "i will marry you because I love you"
-    * doc2: "i will live with harry"
-    * doc2: "i'm sorry for your loss"
-    * "value": "harry", "fuziness": 1
-        * Levenshtein('harry', 'marry') = 1 in doc1
-        * Levenshtein('harry', 'harry') = 0 in doc2
-        * Levenshtein('harry', 'sorry') = 2 in doc2
+* stemming context
+    * snowball analyzer
+    * fuzzy search for 'running', will be stemmed to 'run'
+    * mispelled 'runninga' stems to 'runninga'
+    * 'running' will not match the 'runninga'
+        * 'run' is more than 2 edits away from 'runninga'
+    * can cause a bit of confusion
+        * use the simple analyzer with fuzzy queries
+    * disable synonyms as well
 
 * often combined with prefix search
-    ```
-    GET employees/_search
-    {
-      "query": {
-        "bool": {
-          "should": [
-            { "prefix": { "name.keyword": "Eli" } },
-            { "fuzzy": { "name.keyword": { "value": "Eli", "fuzziness": 2, "prefix_length": 0 } } }
-          ]
-        }
-      }
-    }
-    ```
-* Queries like the term prefix or fuzzy queries are low-level queries that have no analysis phase
-    * important to remember that the term query looks in the inverted index for the exact term only
-        * lowercase cannot fild with uppercase
-
+  
 ### suggesters
 * Suggests similar looking terms based on a provided text by using a suggester. 
 * Parts of the suggest feature are still under development.
