@@ -28,6 +28,7 @@
         * https://medium.com/@neelambuj2/an-approach-to-highly-intuitive-fuzzy-search-in-elasticsearch-with-typo-handling-exact-matches-a79a795d36f8
         * https://blog.mimacom.com/autocomplete-elasticsearch-part1/
     * suggester
+        * https://medium.com/@taranjeet/elasticsearch-using-completion-suggester-to-build-autocomplete-e9c120cf6d87
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
         
@@ -244,30 +245,14 @@ adding transposition as a valid operation.
 * often combined with prefix search
   
 ### suggesters
-* Suggests similar looking terms based on a provided text by using a suggester. 
-* Parts of the suggest feature are still under development.
-```
-POST twitter/_search
-{
-  "suggest" : {
-    "my-suggestion" : {
-      "text" : "tring out Elasticsearch",
-      "term" : {
-        "field" : "message"
-      }
-    }
-  }
-}
-```
-* term-suggester
-    * suggests terms based on edit distance
-    * suggested terms are provided per analyzed suggest text token
-    * params
-        * max_edits
-        * prefix_length
-        * string_distance
-* completion-suggester
-    * provides auto-complete/search-as-you-type functionality
-    * It is not meant for spell correction or did-you-mean functionality like the term suggester
-    * uses data structures that enable fast lookups, but are costly to build and are stored in-memory
-    * supports fuzzy queries
+* suggests similar looking terms
+* still under development
+* types
+    * term-suggester
+        * suggests terms based on edit distance
+        * suggested terms are provided per analyzed suggest text token
+    * completion-suggester
+        * provides auto-complete/search-as-you-type functionality
+        * not meant for spell correction or did-you-mean functionality
+        * uses data structures that enable fast lookups, but are costly to build and are stored in-memory
+        * supports fuzzy queries

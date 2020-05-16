@@ -282,3 +282,69 @@ POST /twitter/_create/2
       }
     }
     * Elvis, Elisabeth
+
+## suggester
+1. index
+PUT movies
+{
+  "mappings": {
+      "properties": {
+        "name": {
+          "type": "completion"
+        },
+        "year": {
+          "type": "keyword"
+        }
+      }
+    }
+}
+1. populate
+POST movies/_doc
+{
+  "name": {
+    "input": ["Iron Man"]
+  },
+  "year": 2008
+}
+POST movies/_doc
+{
+  "name": {
+    "input": ["Thor"]
+  },
+  "year": 2011
+}
+POST movies/_doc
+{
+  "name": {
+    "input": ["Iron Man 2"]
+  },
+  "year": 2010
+}
+POST movies/_doc
+{
+  "name": [
+    {
+      "input": [
+        "The Incredible Hulk"
+      ]
+    },
+    {
+      "input": [
+        "Hulk"
+      ]
+    }
+  ],
+  "year": 2008
+}
+1. search for thor
+POST movies/_search
+{
+  "suggest": {
+    "movie-suggest": {
+      "prefix": "thor",
+      "completion": {
+        "field": "name"
+      }
+    }
+  }
+}
