@@ -84,3 +84,44 @@
 1. search for phrase `ostrich eg`
     * hint: `multi_match`, type: `bool_prefix`, fields: `recipe`, `recipe._2gram`, `recipe._2gram`
     * what will happen when you remove recipe from search fields?
+# stemmers
+1. we would like to index tweets
+    ```
+    {
+        "author": "realDonaldTrump",
+        "tweet": "VICTORY!"
+    }
+    ```
+1. prepare index
+    * hint: `custom` analyzer with `porter_stem` filter
+    PUT /twitter
+    {
+        "settings": {
+            "analysis": {
+                "analyzer": {
+                    "stem_analyzer": {
+                        ...
+                    }
+                }
+            }
+        },
+        "mappings": {
+            "properties": {
+                "author": { "type": "keyword" },
+                "tweet": { "type": "text", "analyzer": "stem_analyzer" }
+            }
+        }
+    }
+    ```
+1. verify analyzer
+    * text: "in linguistic morphology and information retrieval, stemming is the process of 
+            reducing inflected words to their word stem, base or root form—generally a written word form"
+    * hint: POST twitter/_analyze
+1. populate index
+    * run `twitter data` from `data.md`
+1. check stemmed terms
+    * hint: `_termvectors`
+1. search for 'celebrate elected'
+    * hint: `query.match`
+
+# fuzzy

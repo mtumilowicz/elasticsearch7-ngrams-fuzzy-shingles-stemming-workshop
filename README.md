@@ -207,17 +207,18 @@ of type `bool_prefix` that targets the root field and its shingle subfields
   
 ## stemming
 * process of reducing a word to its root form
-* extremely handy when searching - able to match words sharing the root or stem of the word
+    * root form may not be a real word
+* extremely handy when searching
+    * match words sharing the root or stem of the word
     * make your searches more flexible than rigid exact matching
 * example
-    * word: “administrations”
-    * root: “administr.”
-    * allows you to match: "administrator", "administration", "administrate"
-* root form may not be a real word
+    * word: "administrations"
+    * root: "administr."
+    * match: "administrator", "administration", "administrate"
 * categories
-    * Algorithmic stemmers
+    * algorithmic stemmers
         * based on a set of rules
-        * example - remove the -s and -es from the end of plural words
+        * example - remove the `-s` and `-es` from the end of plural words
         * advantages
             * little setup and usually work well out of the box
             * little memory
@@ -228,13 +229,13 @@ of type `bool_prefix` that targets the root field and its shingle subfields
                 * mouse and mice
                 * foot and feet
         * types
-            * stemmer - porter stemming algorithm, several languages
-            * kstem - algorithmic stemming + built-in dictionary
-            * porter_stem - porter stemming algorithm, recommended for English
-            * snowball - Snowball-based stemming rules, several languages
+            * `stemmer` - porter stemming algorithm, several languages
+            * `kstem` - algorithmic stemming + built-in dictionary
+            * `porter_stem` - porter stemming algorithm, recommended for English
+            * `snowball` - Snowball-based stemming rules, several languages
             * differences in how aggressive they stem
                 * more aggressive = chop off more
-    * Dictionary stemmers
+    * dictionary stemmers
         * stem words by looking in a dictionary
         * advantages
             * more accurate way to stem words
@@ -243,11 +244,12 @@ of type `bool_prefix` that targets the root field and its shingle subfields
                 * example: organ and organization, broker and broken
         * disadvantages
             * stemmer is only as good as its dictionary
-                * must include a significant number of words, be updated regularly, change with language trends 
+                * must include a significant number of words, be updated regularly, change with language 
+                trends 
             * use a significant amount of RAM
                 * can slow the stemming process significantly
         * types
-            * hunspell
+            * `hunspell`
     
 ## fuzzy
 * Levenshtein distance between two words - minimum number of single-character edits (insertions, deletions or 

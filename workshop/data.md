@@ -57,3 +57,17 @@
         "recipe": "ostrich beak, chicken liver, snake eggs"
     }
     ```
+# stemmers
+1. twitter data
+    ```
+    POST /twitter/_create/1
+    {
+        "author": "realDonaldTrump",
+        "tweet": "Russian leaders are publicly celebrating Obama’s reelection. They can't wait to see how flexible Obama will be now"
+    }
+    POST /twitter/_create/2
+    {
+        "author": "realDonaldTrump",
+        "tweet": "Sorry losers and haters, but my I.Q. is one of the highest - and you all know it! Please don't feel so stupid or insecure, it's not your fault"
+    }
+    ```
