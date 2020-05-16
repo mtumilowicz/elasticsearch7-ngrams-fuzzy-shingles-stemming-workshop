@@ -135,7 +135,7 @@
 1. combine queries to get `Elvis` and `Elisabeth` as a search result when searching for `Eli`
     * hint: `query.bool.should`, `prefix`, `fuzzy`, `fuzziness`
     
-# completion
+# suggesters
 1. we would like to index
     ```
     POST movies/_doc

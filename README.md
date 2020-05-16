@@ -31,8 +31,22 @@
         * https://medium.com/@taranjeet/elasticsearch-using-completion-suggester-to-build-autocomplete-e9c120cf6d87
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
-        
-# introduction
+
+## preface
+* goals of this workshop
+    * introduction to typos and suggestions handling in elasticsearch
+    * introduction to basic constructs boosting search
+        * ngram and edge ngram (typos, prefixes)
+        * shingles (phrase)
+        * stemmers (operating on roots rather than words)
+        * fuzzy queries (typos)
+        * suggesters
+* in docker-compose there is elasticsearch + kibana (7.6) prepared for local testing
+    * cd docker/compose
+    * docker-compose up -d
+* `workshop` and `answers` are in workshop directory
+     
+## introduction
 * computers can't comprehend natural language
 * searching natural language is inherently imprecise
 * Lucene is composed of many text processing tools

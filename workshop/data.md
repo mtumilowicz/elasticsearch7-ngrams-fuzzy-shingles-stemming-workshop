@@ -98,7 +98,7 @@
     {"index":{"_index":"employees","_id":"41"}}
     {"name":"Fabian"}
     ```
-# completion
+# suggesters
 1. movies data
     ```
     POST movies/_doc
