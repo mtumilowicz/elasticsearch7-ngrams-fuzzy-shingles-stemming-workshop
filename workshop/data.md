@@ -38,3 +38,22 @@
         "quantity": 13
     }
     ```
+# shingles
+1. cookbook data
+    ```
+    POST /cookbook/_create/1
+    {
+        "name": "scrambled eggs",
+        "recipe": "one large ostrich egg or 25 smaller chicken eggs"
+    }
+    POST /cookbook/_create/2
+    {
+        "name": "hot wings",
+        "recipe": "ostrich meat and chicken wings"
+    }
+    POST /cookbook/_create/3
+    {
+        "name": "strange dish",
+        "recipe": "ostrich beak, chicken liver, snake eggs"
+    }
+    ```

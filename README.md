@@ -130,7 +130,7 @@
     }
     ```
 * querying for autocomplete
-    GET /grocery/_search
+    GET /index-type/_search
     {
         "query": {
             "bool": {
@@ -142,33 +142,69 @@
     }
     
 ## shingles
-"one large ostrich egg or 25 smaller chicken eggs"
 * ngrams at the token level instead of the character level
 * example
-    * token: "please divide this sentence into shingles" might be tokenized into shingles 
-    * bigrams: "please divide", "divide this", "this sentence", "sentence into", and "into shingles"
-
-* `index-phrases` option on a text field
-    * If enabled, two-term word combinations (shingles) are indexed into a separate field.
-    * This allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
-    
-
-* min_shingle_size
-* max_shingle_size
-* give you both exact-match and phrase matching
-    * exact match will hit all the shingled tokens and boost the score appropriately, while other 
-    queries can still hit parts of the phrase
-    * shingles are stored as tokens in the index, their TF-ID is calculated and rarer phrase 
-    matches enjoy a bigger score boost than more common phrases
-
-* give you the ability to pre-bake phrase matching. 
-    * build phrases into the index
-        * avoid creating phrases at query time and save some processing time/speed
+    * token: "please divide this sentence into shingles"
+    * shingles bigrams: "please divide", "divide this", "this sentence", "sentence into", and "into shingles"
+* supports exact-match and phrase matching
+    * exact match will hit all the shingled tokens and boost the score appropriately
+    * other queries can still hit parts of the phrase
+    * rarer phrase matches enjoy a bigger score boost than more common phrases
 * downside is that you have larger indices
-* bool_prefix
-    * each term except the last is used in a term query 
-    * last term is used in a prefix query
-    
+* pre-bake phrase matching
+    * build phrases into the index
+    * avoid creating phrases at query time and save some processing time/speed
+* `index-phrases` option on a text field
+    * two-term word combinations (shingles) are indexed into a separate field
+    * allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
+* field type `search_as_you_type`
+    * creates the following fields
+        * `my_field`
+            * if an analyzer is not configured, the default analyzer for the index is used
+        * `my_field._2gram`
+            * wraps the analyzer of `my_field` with a shingle token filter of shingle size 2
+        * `my_field._3gram`
+            * wraps the analyzer of `my_field` with a shingle token filter of shingle size 3
+        * `my_field._index_prefix`
+            * wraps the analyzer of `my_field._3gram` with an edge ngram token filter
+    * params
+        * min_shingle_size
+        * max_shingle_size
+* most efficient way of querying to serve a search-as-you-type use case is usually a `multi_match` query 
+of type `bool_prefix` that targets the root field and its shingle subfields
+    * `multi_match` - match query that allows multi-field queries
+    * `bool_prefix` - constructs a bool query from the terms
+        * each term except the last is used in a term query
+        * ast term is used in a prefix query
+* prepare index with shingles
+    ```
+    PUT /index-type
+    {
+        "mappings": {
+            "properties": {
+                "field-autocomplete": { "type": "search_as_you_type"}
+                ...
+            }
+        }
+    }
+    ```
+* querying
+    ```
+    GET /index-type/_search
+    {
+        "query": {
+            "multi_match": {
+                "query": "...",
+                "type": "bool_prefix",
+                "fields": [
+                    "field-autocomplete._2gram",
+                    "field-autocomplete._3gram"
+                ]
+            }
+        }
+    }
+    ```
+  
 ## stemming
 * process of reducing a word to its root form
 * extremely handy when searching - able to match words sharing the root or stem of the word

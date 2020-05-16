@@ -2,7 +2,6 @@
 1. we would like to index
     * we would like to have autocomplete on name
     ```
-    POST /grocery/_create/1
     {
         "name": "Chocolate Bar",
         "price": 10.0,
@@ -59,3 +58,29 @@
     * starts with `app`
     * search for `cho ba`
         * compare using `must` and `filter` (no scoring)
+# shingles
+1. we would like to index
+    * search as you type on recipe
+    ```
+    {
+        "name": "scrambled eggs",
+        "recipe": "one large ostrich egg or 25 smaller chicken eggs"
+    }
+    ```
+1. prepare index
+    * hint: `"type": "search_as_you_type"`
+    ```
+    PUT /cookbook
+    {
+        "mappings": {
+            "properties": {
+                ...
+            }
+        }
+    }
+    ```
+1. populate index
+    * run `cookbook data` from `data.md`
+1. search for phrase `ostrich eg`
+    * hint: `multi_match`, type: `bool_prefix`, fields: `recipe`, `recipe._2gram`, `recipe._2gram`
+    * what will happen when you remove recipe from search fields?
