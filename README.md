@@ -134,7 +134,7 @@
     {
         "query": {
             "bool": {
-                "filter": {
+                "should": { // filter, must
                     "match": { "field-with-autocomplete.inner-field-name": "..." }
                 }
             }

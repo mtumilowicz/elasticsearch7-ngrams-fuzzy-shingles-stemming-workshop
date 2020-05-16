@@ -1,5 +1,6 @@
 ## autocomplete
 1. settings
+    ```
     PUT /grocery
     {
         "settings": {
@@ -37,91 +38,112 @@
             }
         }
     }
+    ```
 1. verify analyzer
-POST grocery/_analyze
-{
-  "analyzer": "autocomplete_analyzer",
-  "text": "Chocolate Bar"
-}
+    ```
+    POST grocery/_analyze
+    {
+        "analyzer": "autocomplete_analyzer",
+        "text": "Chocolate Bar"
+    }
+    ```
 1. populate index
-POST /grocery/_create/1
-{
-    "name": "Chocolate Bar",
-    "price": 10.0,
-    "quantity": 5
-}
-POST /grocery/_create/2
-{
-    "name": "Chocolate cake",
-    "price": 25.0,
-    "quantity": 2
-}
-POST /grocery/_create/3
-{
-    "name": "Chocapic",
-    "price": 10.0,
-    "quantity": 5
-}
-POST /grocery/_create/4
-{
-    "name": "Coconut",
-    "price": 5.0,
-    "quantity": 25
-}
-POST /grocery/_create/5
-{
-    "name": "Apple",
-    "price": 2.0,
-    "quantity": 13
-}
-1. verify index
+    ```
+    POST /grocery/_create/1
+    {
+        "name": "Chocolate Bar",
+        "price": 10.0,
+        "quantity": 5
+    }
+   POST /grocery/_create/1
+   {
+       "name": "Chocolate Bar",
+       "price": 10.0,
+       "quantity": 5
+   }
+   POST /grocery/_create/2
+   {
+       "name": "Chocolate cake",
+       "price": 25.0,
+       "quantity": 2
+   }
+   POST /grocery/_create/3
+   {
+       "name": "Chocapic",
+       "price": 10.0,
+       "quantity": 5
+   }
+   POST /grocery/_create/4
+   {
+       "name": "Coconut",
+       "price": 5.0,
+       "quantity": 25
+   }
+   POST /grocery/_create/5
+   {
+       "name": "Apple",
+       "price": 2.0,
+       "quantity": 13
+   }
+   ```
+1. verify indexed terms
+    ```
     GET /grocery/_termvectors/1?fields=name
+    ```
 1. search with autocomplete
-    * starts with c
+    * starts with `c`
+        ```
         GET /grocery/_search
         {
-          "query": {
-            "bool": {
-              "filter": {
-                "match": { "name.autocomplete": "c" } // note that min is 2
-              }
+            "query": {
+                "bool": {
+                    "filter": {
+                        "match": { "name.autocomplete": "c" } // note that min is 2
+                    }
+                }
             }
-          }
         }
-    * starts witch choc
+        ```
+    * starts witch `choc`
+        ```
         GET /grocery/_search
         {
-          "query": {
-            "bool": {
-              "filter": {
-                "match": { "name": "choc" }
-              }
+            "query": {
+                "bool": {
+                    "must": {
+                        "match": { "name.autocomplete": "choc" }
+                    }
+                }
             }
-          }
-        }
-    * starts with app
+        }      
+        ```
+    * starts with `app`
+        ```
         GET /grocery/_search
         {
-          "query": {
-            "bool": {
-              "filter": {
-                "match": { "name": "app" }
-              }
+            "query": {
+                "bool": {
+                    "filter": {
+                        "match": { "name.autocomplete": "app" }
+                    }
+                }
             }
-          }
-        }
-    * search cho b
+        }      
+        ```
+    * search for `cho ba`
+        ```
         GET /grocery/_search
         {
-          "query": {
-            "bool": {
-              "filter": {
-                "match": { "name": "cho b" } // maybe term?
-              }
+            "query": {
+                "bool": {
+                    "must": { // compare with filter (no scoring)
+                        "match": { "name.autocomplete": "cho ba" }
+                    }
+                }
             }
-          }
-        }
-
+        }      
+        ```
+        
 ## shingles
 1. prepare index
     PUT /cookbook
