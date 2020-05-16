@@ -15,16 +15,25 @@
                     "autocomplete_analyzer": {
                         "type": "custom",
                         "tokenizer": "standard",
-                        "filter": [ "lowercase", "autocomplete_filter"]
+                        "filter": [ "lowercase", "stop", "autocomplete_filter"]
                     }
                 }
             }
         },
         "mappings": {
             "properties": {
-                "name": { "type": "text", "analyzer": "autocomplete_analyzer", "search_analyzer": "standard" },
-                "price": { "type": "double"},
-                "quantity": { "type": "integer"}
+                "name": { 
+                    "type": "text",
+                    "fields" : {
+                        "autocomplete": {
+                            "type": "text", 
+                            "analyzer": "autocomplete_analyzer", 
+                            "search_analyzer": "standard" 
+                        }
+                    }
+                },
+                "price": { "type": "double" },
+                "quantity": { "type": "integer" }
             }
         }
     }
@@ -74,7 +83,7 @@ POST /grocery/_create/5
           "query": {
             "bool": {
               "filter": {
-                "match": { "name": "c" }
+                "match": { "name.autocomplete": "c" } // note that min is 2
               }
             }
           }

@@ -91,14 +91,56 @@
         * search time: search for the terms that user typed in
         * good practice to set upper limit
             * for example if search for text with `length > 8` - full text search instead of terms 
+* prepare index with edge-ngram analyzer
+    ```
+    PUT /index-name
+    {
+        "settings": {
+            "analysis": {
+                "filter": {
+                    "autocomplete_filter": { // filter that will split tokens into edge ngrams
+                        "type": "edge_ngram",
+                        "min_gram": 2, // smallest ngrams to generate, default: 1
+                        "max_gram": 5 // largest ngrams to generate, default: 2
+                    }
+                },
+                "analyzer": {
+                    "autocomplete_analyzer": { // custom analyzer: standard + autocomplete
+                        "type": "custom",
+                        "tokenizer": "standard",
+                        "filter": [ "lowercase", "stop", "autocomplete_filter"]
+                    }
+                }
+            }
+        },
+        "mappings": {
+            "properties": {
+                "field-with-autocomplete": { // multi-field mapping
+                    "type": "text", // normal mapping
+                    "fields" : {
+                        "inner-field-name": {
+                            "type": "text", 
+                            "analyzer": "autocomplete_analyzer", 
+                            "search_analyzer": "standard" 
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+* querying for autocomplete
+    GET /grocery/_search
+    {
+        "query": {
+            "bool": {
+                "filter": {
+                    "match": { "field-with-autocomplete.inner-field-name": "..." }
+                }
+            }
+        }
+    }
     
-    * `min_gram`
-        * the smallest ngrams you want to generate
-        * defaults: 1
-    * `max_gram`
-        * the largest ngrams you want to generate
-        * defaults: 2
-
 ## shingles
 "one large ostrich egg or 25 smaller chicken eggs"
 * ngrams at the token level instead of the character level
