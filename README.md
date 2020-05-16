@@ -37,13 +37,13 @@
 * searching natural language is inherently imprecise
 * Lucene is composed of many text processing tools
     * each tool - heuristic, an algorithmic shortcut in lieu of true linguistic comprehension
-    * example: prefix query type is very basic 
+    * example: prefix query - very basic 
         * simply matches the beginning letters of words
-    * example: Fuzzy queries - somewhere in the middle in terms of sophistication 
+    * example: fuzzy queries - somewhere in the middle (in terms of sophistication)
         * find words that need at most a certain number of 'edits', to match the query
-    * example: Snowball stemmer and the Metaphone phonetic analyzer, are quite sophisticated
+    * example: snowball stemmer and the metaphone phonetic analyzer - sophisticated
         * mimic grammatical and phonetic aspects of language
-    * example: autocomplete functionality (other names: search as you type, type-ahead search)
+    * example: autocomplete functionality (other names: search as you type, type-ahead search) - rather complex
 
 * hierarchy overview
 
@@ -53,17 +53,6 @@
     | Index-Time Search-as-You-Type           | Intermediate |
     | Completion Suggester                    |   Advanced   |
 
-
-* We have to distinguish between
-  * Prefix Query
-  * Match Phrase Prefix Query
-  * The Prefix Query goes on not analyzed text.
-    * works only on not analyzed text. Therefore we have to use the keyword text field of name
-    * Now I use the prefix Eli, and I get only Elisabeth as a result. What if this was a simple typo and initially I 
-    was searching for Elvis? You can see the limit of a Prefix Query here. It allows no fuzziness.
-  * The Match Phrase Query is a full-text search and therefore analyzes text.
-    * 
-
 ## ngram
 * splitting a token into multiple subtokens
 * sliding window that moves across the word - continuous sequence of characters of the specified length
@@ -72,38 +61,36 @@
     * 1-grams: m, i, c, h, a, l
     * bigrams: mi, ic, ch, ha, al
     * trigrams: mic, ich, cha, hal
-* how it could boost searching
-    * incorrectly spelled word: “mihal”
-    * use fuzzy query (specify an edit distance for words to check matches)
-        * will be discussed later
-    * use ngrams
-        * Bigrams for “michal”: mi ic ch ha al
-        * Bigrams for “mihal”: mi ih ha al
-        * may be drawback: more words than intended will match the original
+* how it could boost searching of incorrectly spelled word
+    * search: "mihal"
+    * bigrams for "michal"”: mi ic ch ha al
+    * bigrams for "mihal": mi ih ha al
+* drawback: more words than intended will match the original
 * use-case
-    * analyze text when the language is not known beforehand
-        * or handle multiple languages with a single analyzer
+    * analyze text when the language is not known
+    * handle multiple languages with a single analyzer
     * analyze text when the language combines words in different manner than other European languages 
         * no spaces between words
         * have long compound words, like German
 
 ### edge ngrams
+* for many applications, only ngrams that start at the beginning of words are needed
 * no user will search for “Database” using the “ase” chunk of characters 
     * that’s where edge n-grams come into play 
-    * edge n-grams = prefixes
+* edge n-grams = consecutive prefixes
 * example
     * token: michal
     * edge n-grams: m, mi, mic, mich, micha, michal
 * helpful for searching words with prefix
     * prefix query is time consuming
-* for many applications, only ngrams that start at the beginning of words are needed
+    * indexing is longer
 * index vs search analyzer
     * standard approach: same analyzer at index time and at search time 
-    * in the case of the edge ngram tokenizer - the advice is different 
-        * ensure that prefixes are available for matching in the index - edge_ngram tokenizer at index time
-        * at search time, just search for the terms the user has typed in - standard tokenizer at search time
-    * good practice to set upper limit
-        * for example if search for text with `length > 8` - full text search instead of terms 
+    * different advice for edge ngram tokenizer 
+        * index time: ensure that prefixes are available for matching in the index
+        * search time: search for the terms that user typed in
+        * good practice to set upper limit
+            * for example if search for text with `length > 8` - full text search instead of terms 
     
     * `min_gram`
         * the smallest ngrams you want to generate
