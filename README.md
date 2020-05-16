@@ -301,14 +301,48 @@ of type `bool_prefix` that targets the root field and its shingle subfields
         * disable synonyms as well
         
 ## suggesters
-* suggests similar looking terms
+* suggests documents containing similar looking terms
 * still under development
 * types
     * term-suggester
         * suggests terms based on edit distance
-        * suggested terms are provided per analyzed suggest text token
     * completion-suggester
         * provides auto-complete/search-as-you-type functionality
         * not meant for spell correction or did-you-mean functionality
         * uses data structures that enable fast lookups, but are costly to build and are stored in-memory
         * supports fuzzy queries
+* define index
+    ```
+    PUT index-name
+    {
+        "mappings": {
+            "properties": {
+                "search_associations": {
+                    "type": "completion"
+                },
+                ...
+            }
+        }
+    }
+    ```
+* index document
+    ```
+    POST index-name/_doc
+    {
+        "search_associations": [ ... ],
+    }
+    ```
+* query
+    ```
+    POST index-name/_search
+    {
+        "suggest": {
+            "suggest-name": {
+                "prefix": "...",
+                "completion": {
+                    "field": "search_associations"
+                }
+            }
+        }
+    }
+    ```

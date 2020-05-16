@@ -231,66 +231,49 @@
     
 # suggester
 1. index
-PUT movies
-{
-  "mappings": {
-      "properties": {
-        "name": {
-          "type": "completion"
-        },
-        "year": {
-          "type": "keyword"
+    ```
+    PUT movies
+    {
+        "mappings": {
+            "properties": {
+                "name": {
+                    "type": "text"
+                },
+                "search_associations": {
+                    "type": "completion"
+                },
+                "year": {
+                    "type": "keyword"
+                }
+            }
         }
-      }
     }
-}
-1. populate
-POST movies/_doc
-{
-  "name": {
-    "input": ["Iron Man"]
-  },
-  "year": 2008
-}
-POST movies/_doc
-{
-  "name": {
-    "input": ["Thor"]
-  },
-  "year": 2011
-}
-POST movies/_doc
-{
-  "name": {
-    "input": ["Iron Man 2"]
-  },
-  "year": 2010
-}
-POST movies/_doc
-{
-  "name": [
+    ```
+1. search for `aveng`
+    ```
+    POST movies/_search
     {
-      "input": [
-        "The Incredible Hulk"
-      ]
-    },
+        "suggest": {
+            "movie-suggest": {
+                "prefix": "aveng",
+                "completion": {
+                    "field": "search_associations"
+                }
+            }
+        }
+    }
+    ```
+1. search for `hulk`
+    ```
+    POST movies/_search
     {
-      "input": [
-        "Hulk"
-      ]
+        "suggest": {
+            "movie-suggest": {
+                "prefix": "hulk",
+                "completion": {
+                    "field": "search_associations"
+                }
+            }
+        }
     }
-  ],
-  "year": 2008
-}
-1. search for thor
-POST movies/_search
-{
-  "suggest": {
-    "movie-suggest": {
-      "prefix": "thor",
-      "completion": {
-        "field": "name"
-      }
-    }
-  }
-}
+    ```

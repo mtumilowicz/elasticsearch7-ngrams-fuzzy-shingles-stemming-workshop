@@ -134,3 +134,38 @@
     * hint: `query.fuzzy`
 1. combine queries to get `Elvis` and `Elisabeth` as a search result when searching for `Eli`
     * hint: `query.bool.should`, `prefix`, `fuzzy`, `fuzziness`
+    
+# completion
+1. we would like to index
+    ```
+    POST movies/_doc
+    {
+        "name": "Iron Man",
+        "search_associations": ["avenger", "Robert Downey Jr.", "John Favreau" ],
+        "year": 2008
+    }
+    ```
+1. propose index
+    * hint: type - `completion`
+    ```
+    PUT movies
+    {
+        "mappings": {
+            "properties": {
+                "name": {
+                    "type": "text"
+                },
+                ...,
+                "year": {
+                    "type": "keyword"
+                }
+            }
+        }
+    }
+    ```
+1. populate index
+    * run `movies data` from `data.md`
+1. search for `aveng`
+    * hint: `suggest`, `prefix`
+1. search for `hulk`
+    * hint: `suggest`, `prefix`

@@ -98,3 +98,19 @@
     {"index":{"_index":"employees","_id":"41"}}
     {"name":"Fabian"}
     ```
+# completion
+1. movies data
+    ```
+    POST movies/_doc
+    {
+        "name": "Iron Man",
+        "search_associations": ["avenger", "Robert Downey Jr.", "John Favreau" ],
+        "year": 2008
+    }
+    POST movies/_doc
+    {
+        "name": "The Incredible Hulk",
+        "search_associations": ["avenger", "hulk", "marvel, "norton" ],
+        "year": 2008
+    }
+    ```
