@@ -125,3 +125,12 @@
     * hint: `query.match`
 
 # fuzzy
+1. populate index
+    * run `employees data` from `data.md`
+1. get Elvis and Elisabeth as a search result when searching for `El`
+    * hint: `query.prefix`
+1. make typo in `El` -> `Eli` - result: only Elisabeth
+1. handle typos with fuzz query - result: only Elvis
+    * hint: `query.fuzzy`
+1. combine queries to get `Elvis` and `Elisabeth` as a search result when searching for `Eli`
+    * hint: `query.bool.should`, `prefix`, `fuzzy`, `fuzziness`

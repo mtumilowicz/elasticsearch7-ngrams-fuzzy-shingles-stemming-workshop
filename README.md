@@ -250,55 +250,46 @@ of type `bool_prefix` that targets the root field and its shingle subfields
                 * can slow the stemming process significantly
         * types
             * `hunspell`
-    
+
 ## fuzzy
-* Levenshtein distance between two words - minimum number of single-character edits (insertions, deletions or 
-substitutions) required to change one word into the other
-* Damerau-Levenshtein distance formula is a modification of the classic Levenshtein distance formula, altering it by 
-adding transposition as a valid operation.
-    * utility of transpositions
-        * compare 'aex' and 'axe'
-        * Levenshtein distance: two edits away
-        * Damerau-Levenshtein: one edit away
-        * Levenshtein: 'aex' is as far from 'axe' as 'faxes'
-            * Damerau-Levenshtein makes greater intuitive sense in most cases
-* edit distance is the number of one-character changes needed to turn one term into another
+* some typos cannot be solved with n-grams
+* Levenshtein distance between two words
+    * minimum number of single-character edits (insertions, deletions or substitutions) required to change 
+    one word into the other
+* Damerau-Levenshtein distance = Levenshtein + transposition
     * changing a character (box → fox)
     * removing a character (black → lack)
     * inserting a character (sic → sick)
     * transposing two adjacent characters (act → cat)
-* example for Levenshtein
-    * doc1: "i will marry you because I love you"
-    * doc2: "i will live with harry"
-    * doc3: "i'm sorry for your loss"
-    * distances
-        * Levenshtein('harry', 'marry') = 1 in doc1
-        * Levenshtein('harry', 'harry') = 0 in doc2
-        * Levenshtein('harry', 'sorry') = 2 in doc2
-* some typos cannot be solves with n-grams
-* fuzzy-query
-    * returns documents that contain terms similar to the search term, as measured by a Levenshtein 
-    edit distance
-    * fuzzy query creates a set of all possible variations, or expansions, of the search term within a specified edit 
-    distance
+* Levenshtein vs Damerau-Levenshtein
+    * compare 'aex' and 'axe'
+    * Levenshtein distance: two edits away
+        * 'aex' is as far from 'axe' as 'faxes'
+    * Damerau-Levenshtein: one edit away
+        * makes greater intuitive sense in most cases
+* fuzzy query
+    ```
+    GET index-search/_search
+    {
+        "query": {
+            "bool": {
+                "should": [
+                    { "prefix": { "field-name": "..." } },
+                    { "fuzzy": { "field-name": { "value": "...", "fuzziness": 2 } } }
+                ]
+            }
+        }
+    }
+    ```
+    * returns documents that contain terms similar (LD distance) to the search term
+    * creates a set of all possible variations of the search term within a specified edit distance
     * does not analyze the query text first
-        * The query then returns exact matches for each expansion
-    * parameters
-        * value
-            * (Required, string) Term you wish to find in the provided <field>.
-        * fuzziness
-            * (Optional, string) Maximum edit distance allowed for matching.
-            * 2 - maximum allowed Levenshtein Edit Distance (or number of edits)
-                * Larger differences are far more expensive to compute efficiently and are not processed by Lucene
-            * AUTO
-                * 0..2 - Must match exactly
-                * 3..5 - One edit allowed
-                * `>5` - Two edits allowed
-        * max_expansions (Optional, integer) Maximum number of variations created. Defaults to 50.
-        * prefix_length (Optional, integer) Number of beginning characters left unchanged when creating expansions. Defaults to 0.
-* match-query
-    * fuzziness(Optional, string) Maximum edit distance allowed for matching
-* misspellings problems
+        * exact matches for each expansion
+    * parameters worth mentioning
+        * fuzziness - maximum edit distance allowed for matching
+        * max_expansions - maximum number of variations created, defaults: 50
+        * prefix_length - number of beginning characters left unchanged when creating expansions, defaults: 0
+    * often combined with prefix search
 * stemming context
     * snowball analyzer
     * fuzzy search for 'running', will be stemmed to 'run'
@@ -307,11 +298,9 @@ adding transposition as a valid operation.
         * 'run' is more than 2 edits away from 'runninga'
     * can cause a bit of confusion
         * use the simple analyzer with fuzzy queries
-    * disable synonyms as well
-
-* often combined with prefix search
-  
-### suggesters
+        * disable synonyms as well
+        
+## suggesters
 * suggests similar looking terms
 * still under development
 * types

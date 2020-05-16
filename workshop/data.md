@@ -71,3 +71,30 @@
         "tweet": "Sorry losers and haters, but my I.Q. is one of the highest - and you all know it! Please don't feel so stupid or insecure, it's not your fault"
     }
     ```
+# fuzzy
+1. employees data
+    ```
+    POST _bulk
+    {"index":{"_index":"employees","_id":"3"}}
+    {"name":"Elvis"}
+    {"index":{"_index":"employees","_id":"7"}}
+    {"name":"Average Joe"}
+    {"index":{"_index":"employees","_id":"11"}}
+    {"name":"Elisabeth"}
+    {"index":{"_index":"employees","_id":"13"}}
+    {"name":"William"}
+    {"index":{"_index":"employees","_id":"17"}}
+    {"name":"Jack"}
+    {"index":{"_index":"employees","_id":"19"}}
+    {"name":"Iris"}
+    {"index":{"_index":"employees","_id":"23"}}
+    {"name":"Barbara"}
+    {"index":{"_index":"employees","_id":"29"}}
+    {"name":"Averell Dalton"}
+    {"index":{"_index":"employees","_id":"31"}}
+    {"name":"Bryce Dallas Howard"}
+    {"index":{"_index":"employees","_id":"37"}}
+    {"name":"Fabio"}
+    {"index":{"_index":"employees","_id":"41"}}
+    {"name":"Fabian"}
+    ```

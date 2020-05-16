@@ -137,7 +137,6 @@
         }
     }
     ```
-
 # stemming
 1. prepare index
     ```
@@ -187,69 +186,50 @@
     }
     ```
 # fuzzy
-1. populate index
-    POST _bulk
-    {"index":{"_index":"employees","_id":"3"}}
-    {"name":"Elvis"}
-    {"index":{"_index":"employees","_id":"7"}}
-    {"name":"Average Joe"}
-    {"index":{"_index":"employees","_id":"11"}}
-    {"name":"Elisabeth"}
-    {"index":{"_index":"employees","_id":"13"}}
-    {"name":"William"}
-    {"index":{"_index":"employees","_id":"17"}}
-    {"name":"Jack"}
-    {"index":{"_index":"employees","_id":"19"}}
-    {"name":"Iris"}
-    {"index":{"_index":"employees","_id":"23"}}
-    {"name":"Barbara"}
-    {"index":{"_index":"employees","_id":"29"}}
-    {"name":"Averell Dalton"}
-    {"index":{"_index":"employees","_id":"31"}}
-    {"name":"Bryce Dallas Howard"}
-    {"index":{"_index":"employees","_id":"37"}}
-    {"name":"Fabio"}
-    {"index":{"_index":"employees","_id":"41"}}
-    {"name":"Fabian"}
-1. find Elisabeth and Elvis using prefix
+1. get Elvis and Elisabeth as a search result when searching for `El`
+    ```
     GET employees/_search
     {
-      "query": { "prefix": { "name.keyword": "El" } }
+        "query": { "prefix": { "name.keyword": "El" } }
     }
-1. make typo in above query and type Eli
+    ```
+1. make typo in `El` -> `Eli` - result: only Elisabeth
+    ```
     GET employees/_search
     {
-      "query": { "prefix": { "name.keyword": "Eli" } }
+        "query": { "prefix": { "name.keyword": "Eli" } }
     }
-    * only Elisabeth
-1. handle typos with fuzz query
+    ```
+1. handle typos with fuzz query - result: only Elvis
+    ```
     GET /_search
     {
-      "query": {
-        "fuzzy": {
-          "name.keyword": {
-            "value": "Eli",
-            "fuzziness": 2
-          }
+        "query": {
+            "fuzzy": {
+                "name.keyword": {
+                    "value": "Eli",
+                    "fuzziness": 2
+                }
+            }
         }
-      }
     }
-    * only elvis
-1. combine with prefix
+    ```
+1. combine queries to get `Elvis` and `Elisabeth` as a search result when searching for `Eli`
+    ```
     GET employees/_search
     {
-      "query": {
-        "bool": {
-          "should": [
-            { "prefix": { "name.keyword": "Eli" } },
-            { "fuzzy": { "name.keyword": { "value": "Eli", "fuzziness": 2 } } }
-          ]
+        "query": {
+            "bool": {
+                "should": [
+                    { "prefix": { "name.keyword": "Eli" } },
+                    { "fuzzy": { "name.keyword": { "value": "Eli", "fuzziness": 2 } } }
+                ]
+            }
         }
-      }
     }
-    * Elvis, Elisabeth
-
-## suggester
+    ```
+    
+# suggester
 1. index
 PUT movies
 {
