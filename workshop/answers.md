@@ -1,5 +1,5 @@
-## autocomplete
-1. settings
+# edge n-grams
+1. prepare index
     ```
     PUT /grocery
     {
@@ -47,45 +47,6 @@
         "text": "Chocolate Bar"
     }
     ```
-1. populate index
-    ```
-    POST /grocery/_create/1
-    {
-        "name": "Chocolate Bar",
-        "price": 10.0,
-        "quantity": 5
-    }
-   POST /grocery/_create/1
-   {
-       "name": "Chocolate Bar",
-       "price": 10.0,
-       "quantity": 5
-   }
-   POST /grocery/_create/2
-   {
-       "name": "Chocolate cake",
-       "price": 25.0,
-       "quantity": 2
-   }
-   POST /grocery/_create/3
-   {
-       "name": "Chocapic",
-       "price": 10.0,
-       "quantity": 5
-   }
-   POST /grocery/_create/4
-   {
-       "name": "Coconut",
-       "price": 5.0,
-       "quantity": 25
-   }
-   POST /grocery/_create/5
-   {
-       "name": "Apple",
-       "price": 2.0,
-       "quantity": 13
-   }
-   ```
 1. verify indexed terms
     ```
     GET /grocery/_termvectors/1?fields=name
@@ -98,7 +59,7 @@
             "query": {
                 "bool": {
                     "filter": {
-                        "match": { "name.autocomplete": "c" } // note that min is 2
+                        "match": { "name.autocomplete": "c" }
                     }
                 }
             }
@@ -131,12 +92,13 @@
         }      
         ```
     * search for `cho ba`
+        * vs filter - we have scoring which is helpful
         ```
         GET /grocery/_search
         {
             "query": {
                 "bool": {
-                    "must": { // compare with filter (no scoring)
+                    "must": {
                         "match": { "name.autocomplete": "cho ba" }
                     }
                 }
