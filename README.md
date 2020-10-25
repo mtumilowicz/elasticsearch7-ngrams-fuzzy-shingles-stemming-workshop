@@ -47,10 +47,9 @@
 * `workshop` and `answers` are in workshop directory
      
 ## introduction
-* computers can't comprehend natural language
-* searching natural language is inherently imprecise
+* searching natural language is inherently imprecise - computers can't comprehend natural language
+    * they need heuristic, an algorithmic shortcut in lieu of true linguistic comprehension
 * Lucene is composed of many text processing tools
-    * each tool - heuristic, an algorithmic shortcut in lieu of true linguistic comprehension
     * example: prefix query - very basic 
         * simply matches the beginning letters of words
     * example: fuzzy queries - somewhere in the middle (in terms of sophistication)
@@ -84,13 +83,13 @@
     * analyze text when the language is not known
     * handle multiple languages with a single analyzer
     * analyze text when the language combines words in different manner than other European languages 
-        * no spaces between words
-        * have long compound words, like German
+        * japanese: no spaces between words
+        * german: long compound words
 
 ### edge ngrams
-* for many applications, only ngrams that start at the beginning of words are needed
-* no user will search for “Database” using the “ase” chunk of characters 
-    * that’s where edge n-grams come into play 
+* no user will search for “Database” using the “ase” chunk of characters
+    * for many applications, only ngrams that start at the beginning of words are needed
+    * that’s where edge n-grams come into play
 * edge n-grams = consecutive prefixes
 * example
     * token: michal
@@ -99,7 +98,7 @@
     * prefix query is time consuming
     * indexing is longer
 * index vs search analyzer
-    * standard approach: same analyzer at index time and at search time 
+    * standard approach: same analyzer at index time and at search time
     * different advice for edge ngram tokenizer 
         * index time: ensure that prefixes are available for matching in the index
         * search time: search for the terms that user typed in
@@ -144,6 +143,7 @@
     }
     ```
 * querying for autocomplete
+    ```
     GET /index-type/_search
     {
         "query": {
@@ -154,6 +154,7 @@
             }
         }
     }
+    ```
     
 ## shingles
 * ngrams at the token level instead of the character level
@@ -227,7 +228,7 @@ of type `bool_prefix` that targets the root field and its shingle subfields
     * make your searches more flexible than rigid exact matching
 * example
     * word: "administrations"
-    * root: "administr."
+    * root: "administr"
     * match: "administrator", "administration", "administrate"
 * categories
     * algorithmic stemmers
@@ -271,10 +272,10 @@ of type `bool_prefix` that targets the root field and its shingle subfields
     * minimum number of single-character edits (insertions, deletions or substitutions) required to change 
     one word into the other
 * Damerau-Levenshtein distance = Levenshtein + transposition
-    * changing a character (box → fox)
-    * removing a character (black → lack)
-    * inserting a character (sic → sick)
-    * transposing two adjacent characters (act → cat)
+    * changing a character (box -> fox)
+    * removing a character (black -> lack)
+    * inserting a character (sic -> sick)
+    * transposing two adjacent characters (act -> cat)
 * Levenshtein vs Damerau-Levenshtein
     * compare 'aex' and 'axe'
     * Levenshtein distance: two edits away
