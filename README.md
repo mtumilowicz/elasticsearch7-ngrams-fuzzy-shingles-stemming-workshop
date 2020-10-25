@@ -70,14 +70,14 @@
 * splitting a token into multiple subtokens
 * sliding window that moves across the word - continuous sequence of characters of the specified length
 * example
-    * token: michal
-    * 1-grams: m, i, c, h, a, l
-    * bigrams: mi, ic, ch, ha, al
-    * trigrams: mic, ich, cha, hal
+    * token: `michal`
+    * 1-grams: `m`, `i`, `c`, `h`, `a`, `l`
+    * bigrams: `mi`, `ic`, `ch`, `ha`, `al`
+    * trigrams: `mic`, `ich`, `cha`, `hal`
 * how it could boost searching of incorrectly spelled word
     * search: "mihal"
-    * bigrams for "michal"”: mi ic ch ha al
-    * bigrams for "mihal": mi ih ha al
+    * bigrams for "michal": `mi`, `ic`, `ch`, `ha`, `al`
+    * bigrams for "mihal": `mi`, `ih`, `ha`, `al`
 * drawback: more words than intended will match the original
 * use-case
     * analyze text when the language is not known
@@ -87,13 +87,13 @@
         * german: long compound words
 
 ### edge ngrams
-* no user will search for “Database” using the “ase” chunk of characters
+* no user will search for "Database" using the "ase" chunk of characters
     * for many applications, only ngrams that start at the beginning of words are needed
     * that’s where edge n-grams come into play
 * edge n-grams = consecutive prefixes
 * example
-    * token: michal
-    * edge n-grams: m, mi, mic, mich, micha, michal
+    * token: `michal`
+    * edge n-grams: `m`, `mi`, `mic`, `mich`, `micha`, `michal`
 * helpful for searching words with prefix
     * prefix query is time consuming
     * indexing is longer
