@@ -49,7 +49,7 @@
     ```
 1. verify indexed terms
     ```
-    GET /grocery/_termvectors/1?fields=name
+    GET /grocery/_termvectors/1?fields=name.autocomplete
     ```
 1. search with autocomplete
     * starts with `c`
@@ -120,7 +120,6 @@
     }
     ```
 1. search for phrase 'ostrich eg'
-    * without `recipe` - only phrase matching
     ```
     GET /cookbook/_search
     {
@@ -137,6 +136,7 @@
         }
     }
     ```
+    * without `recipe` - only phrase matching (without text matching)
 # stemming
 1. prepare index
     ```
@@ -166,8 +166,7 @@
     POST twitter/_analyze
     {
         "analyzer": "stem_analyzer",
-        "text": "in linguistic morphology and information retrieval, stemming is the process of reducing 
-        inflected words to their word stem, base or root form—generally a written word form"
+        "text": "in linguistic morphology and information retrieval, stemming is the process of reducing inflected words to their word stem, base or root form—generally a written word form"
     }
     ```
 1. check stemmed terms
@@ -214,6 +213,7 @@
         }
     }
     ```
+    * distance from `Eli` to `Elisabeth` is more than 2
 1. combine queries to get `Elvis` and `Elisabeth` as a search result when searching for `Eli`
     ```
     GET employees/_search

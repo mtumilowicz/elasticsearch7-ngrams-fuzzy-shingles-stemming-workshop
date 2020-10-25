@@ -7,12 +7,6 @@
         "price": 10.0,
         "quantity": 5
     }
-    POST /grocery/_create/1
-    {
-        "name": "Chocolate Bar",
-        "price": 10.0,
-        "quantity": 5
-    }
     POST /grocery/_create/2
     {
         "name": "Chocolate cake",
@@ -110,7 +104,7 @@
     POST movies/_doc
     {
         "name": "The Incredible Hulk",
-        "search_associations": ["avenger", "hulk", "marvel, "norton" ],
+        "search_associations": ["avenger", "hulk", "marvel", "norton" ],
         "year": 2008
     }
     ```
