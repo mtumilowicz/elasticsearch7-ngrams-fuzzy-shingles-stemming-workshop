@@ -48,36 +48,29 @@
      
 ## introduction
 * searching natural language is inherently imprecise - computers can't comprehend natural language
-    * they need heuristic, an algorithmic shortcut in lieu of true linguistic comprehension
+    * they need heuristic, an algorithmic equivalent of true linguistic comprehension
 * Lucene is composed of many text processing tools
-    * example: prefix query - very basic 
+    * example: prefix query
         * simply matches the beginning letters of words
-    * example: fuzzy queries - somewhere in the middle (in terms of sophistication)
+    * example: fuzzy queries
         * find words that need at most a certain number of 'edits', to match the query
-    * example: snowball stemmer and the metaphone phonetic analyzer - sophisticated
+    * example: snowball stemmer and the metaphone phonetic analyzer
         * mimic grammatical and phonetic aspects of language
-    * example: autocomplete functionality (other names: search as you type, type-ahead search) - rather complex
-
-* hierarchy overview
-
-    | Method                                  |  Difficulty  |
-    | --------------------------------------- | ------------ |
-    | Prefix and Match Phrase Prefix Query    |     Easy     |
-    | Index-Time Search-as-You-Type           | Intermediate |
-    | Completion Suggester                    |   Advanced   |
+    * example: autocomplete functionality (other names: search as you type, type-ahead search)
 
 ## ngram
 * splitting a token into multiple subtokens
 * sliding window that moves across the word - continuous sequence of characters of the specified length
 * example
-    * token: `michal`
-    * 1-grams: `m`, `i`, `c`, `h`, `a`, `l`
-    * bigrams: `mi`, `ic`, `ch`, `ha`, `al`
-    * trigrams: `mic`, `ich`, `cha`, `hal`
+    * token: `pillar`
+    * 1-grams: `p`, `i`, `l`, `l`, `a`, `r`
+    * bigrams: `pi`, `il`, `ll`, `la`, `ar`
+    * trigrams: `pil`, `ill`, `lla`, `lar`
 * how it could boost searching of incorrectly spelled word
-    * search: "mihal"
-    * bigrams for "michal": `mi`, `ic`, `ch`, `ha`, `al`
-    * bigrams for "mihal": `mi`, `ih`, `ha`, `al`
+    * search: "pilar"
+    * bigrams for "pillar": `pi`, `il`, `ll`, `la`, `ar`
+    * bigrams for "pilar": `pi`, `il`, `la`, `ar`
+        * 4/5 match comparing to correctly spelled word
 * drawback: more words than intended will match the original
 * use-case
     * analyze text when the language is not known
@@ -92,15 +85,15 @@
     * that’s where edge n-grams come into play
 * edge n-grams = consecutive prefixes
 * example
-    * token: `michal`
-    * edge n-grams: `m`, `mi`, `mic`, `mich`, `micha`, `michal`
+    * token: `pillar`
+    * edge n-grams: `p`, `pi`, `pil`, `pill`, `pilla`, `pillar`
 * helpful for searching words with prefix
     * prefix query is time consuming
-    * indexing is longer
+    * but indexing is longer (and indexes are bigger - contains prefixes)
 * index vs search analyzer
     * standard approach: same analyzer at index time and at search time
-    * different advice for edge ngram tokenizer 
-        * index time: ensure that prefixes are available for matching in the index
+    * different advice for edge ngrams 
+        * index time: index all prefixes
         * search time: search for the terms that user typed in
         * good practice to set upper limit
             * for example if search for text with `length > 8` - full text search instead of terms 
@@ -134,8 +127,9 @@
                         "inner-field-name": {
                             "type": "text", 
                             "analyzer": "autocomplete_analyzer", 
-                            "search_analyzer": "standard" 
+                            "search_analyzer": "standard" // override - by default, queries use the analyzer defined above
                         }
+                        // other mappings for the same field
                     }
                 }
             }
@@ -160,15 +154,15 @@
 * ngrams at the token level instead of the character level
 * example
     * token: "please divide this sentence into shingles"
-    * shingles bigrams: "please divide", "divide this", "this sentence", "sentence into", and "into shingles"
+    * shingles bigrams: `please divide`, `divide this`, `this sentence`, `sentence into`, and `into shingles`
 * supports exact-match and phrase matching
     * exact match will hit all the shingled tokens and boost the score appropriately
     * other queries can still hit parts of the phrase
     * rarer phrase matches enjoy a bigger score boost than more common phrases
-* downside is that you have larger indices
-* pre-bake phrase matching
-    * build phrases into the index
-    * avoid creating phrases at query time and save some processing time/speed
+* downside: larger indices
+    * pre-bake phrase matching
+        * build phrases into the index
+        * avoid creating phrases at query time and save some processing time/speed
 * `index-phrases` option on a text field
     * two-term word combinations (shingles) are indexed into a separate field
     * allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
@@ -185,12 +179,14 @@
     * params
         * min_shingle_size
         * max_shingle_size
-* most efficient way of querying to serve a search-as-you-type use case is usually a `multi_match` query 
-of type `bool_prefix` that targets the root field and its shingle subfields
-    * `multi_match` - match query that allows multi-field queries
+* most efficient way to serve a search-as-you-type is `multi_match` query of type `bool_prefix`
     * `bool_prefix` - constructs a bool query from the terms
         * each term except the last is used in a term query
-        * ast term is used in a prefix query
+        * last term is used in a prefix query
+    * example: `please divide this sen`
+        * is parsed into terms: `please`, `divide`, `this`, `sen`
+        * each term except last is used in exact match
+        * last term is used as prefix query: `sen` -> `sentence`
 * prepare index with shingles
     ```
     PUT /index-type
@@ -224,7 +220,7 @@ of type `bool_prefix` that targets the root field and its shingle subfields
 * process of reducing a word to its root form
     * root form may not be a real word
 * extremely handy when searching
-    * match words sharing the root or stem of the word
+    * match words sharing the root
     * make your searches more flexible than rigid exact matching
 * example
     * word: "administrations"
@@ -235,7 +231,7 @@ of type `bool_prefix` that targets the root field and its shingle subfields
         * based on a set of rules
         * example - remove the `-s` and `-es` from the end of plural words
         * advantages
-            * little setup and usually work well out of the box
+            * little setup
             * little memory
             * typically faster than dictionary stemmers
         * disadvantages    
@@ -253,14 +249,13 @@ of type `bool_prefix` that targets the root field and its shingle subfields
     * dictionary stemmers
         * stem words by looking in a dictionary
         * advantages
-            * more accurate way to stem words
+            * more accurate
             * irregular words
             * distinguishes similar (in context of spelling) words but not related conceptually
                 * example: organ and organization, broker and broken
         * disadvantages
             * stemmer is only as good as its dictionary
-                * must include a significant number of words, be updated regularly, change with language 
-                trends 
+                * must include a significant number of words, be updated regularly, change with language trends 
             * use a significant amount of RAM
                 * can slow the stemming process significantly
         * types
