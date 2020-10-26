@@ -89,11 +89,11 @@
     * edge n-grams: `p`, `pi`, `pil`, `pill`, `pilla`, `pillar`
 * helpful for searching words with prefix
     * prefix query is time consuming
-    * but indexing is longer (and indexes are bigger - contains prefixes)
+    * but indexing is longer (and indexes are bigger - contain prefixes)
 * index vs search analyzer
     * standard approach: same analyzer at index time and at search time
     * different advice for edge ngrams 
-        * index time: index all prefixes
+        * index time: save all prefixes
         * search time: search for the terms that user typed in
         * good practice to set upper limit
             * for example if search for text with `length > 8` - full text search instead of terms 
@@ -121,15 +121,18 @@
         },
         "mappings": {
             "properties": {
-                "field-with-autocomplete": { // multi-field mapping
+                "description": { // field name with autocomplete feature
                     "type": "text", // normal mapping
-                    "fields" : {
-                        "inner-field-name": {
+                    "fields" : { // multi-field mapping
+                        "autocomplete": { // mapping responsible for autocomplete feature
                             "type": "text", 
                             "analyzer": "autocomplete_analyzer", 
                             "search_analyzer": "standard" // override - by default, queries use the analyzer defined above
+                        },
+                        "english": { // other mappings for the same field
+                            "type": "text",
+                            "analyzer": "english"
                         }
-                        // other mappings for the same field
                     }
                 }
             }
@@ -143,7 +146,7 @@
         "query": {
             "bool": {
                 "should": { // filter, must
-                    "match": { "field-with-autocomplete.inner-field-name": "..." }
+                    "match": { "description.autocomplete": "search for descr" }
                 }
             }
         }
@@ -155,10 +158,7 @@
 * example
     * token: "please divide this sentence into shingles"
     * shingles bigrams: `please divide`, `divide this`, `this sentence`, `sentence into`, and `into shingles`
-* supports exact-match and phrase matching
-    * exact match will hit all the shingled tokens and boost the score appropriately
-    * other queries can still hit parts of the phrase
-    * rarer phrase matches enjoy a bigger score boost than more common phrases
+* rare phrase matches will have a bigger score boost than more common phrases
 * downside: larger indices
     * pre-bake phrase matching
         * build phrases into the index
@@ -193,7 +193,7 @@
     {
         "mappings": {
             "properties": {
-                "field-autocomplete": { "type": "search_as_you_type"}
+                "description": { "type": "search_as_you_type"}
                 ...
             }
         }
@@ -208,8 +208,8 @@
                 "query": "...",
                 "type": "bool_prefix",
                 "fields": [
-                    "field-autocomplete._2gram",
-                    "field-autocomplete._3gram"
+                    "description._2gram",
+                    "description._3gram"
                 ]
             }
         }
@@ -303,7 +303,7 @@
 * stemming context
     * snowball analyzer
     * fuzzy search for 'running', will be stemmed to 'run'
-    * mispelled 'runninga' stems to 'runninga'
+    * misspelled 'runninga' stems to 'runninga'
     * 'running' will not match the 'runninga'
         * 'run' is more than 2 edits away from 'runninga'
     * can cause a bit of confusion
