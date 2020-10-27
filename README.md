@@ -33,7 +33,7 @@
         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters.html#completion-suggester
 
 ## preface
-* goals of this workshop
+* goals of this tech-talk / workshops
     * introduction to typos and suggestions handling in elasticsearch
     * introduction to basic constructs boosting search
         * ngram and edge ngram (typos, prefixes)
