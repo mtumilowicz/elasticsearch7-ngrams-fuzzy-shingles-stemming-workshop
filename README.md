@@ -88,8 +88,8 @@
     * token: `pillar`
     * edge n-grams: `p`, `pi`, `pil`, `pill`, `pilla`, `pillar`
 * helpful for searching words with prefix
-    * prefix query is time consuming
-    * but indexing is longer (and indexes are bigger - contain prefixes)
+    * vs prefix query: prefix query is much more time consuming
+    * but indexing edge ngrams is longer (and indexes are bigger - contain prefixes)
 * index vs search analyzer
     * standard approach: same analyzer at index time and at search time
     * different advice for edge ngrams 
@@ -166,6 +166,7 @@
 * `index-phrases` option on a text field
     * two-term word combinations (shingles) are indexed into a separate field
     * allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
+        * slop = how far we allow the terms to be
 * field type `search_as_you_type`
     * creates the following fields
         * `my_field`
