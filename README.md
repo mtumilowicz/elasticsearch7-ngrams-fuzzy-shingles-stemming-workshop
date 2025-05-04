@@ -91,8 +91,7 @@
     * vs prefix query: prefix query is much more time consuming
     * but indexing edge ngrams is longer (and indexes are bigger - contain prefixes)
 * index vs search analyzer
-    * standard approach: same analyzer at index time and at search time
-    * different advice for edge ngrams 
+    * different approach than standard - use different analyzers for index and search
         * index time: save all prefixes
         * search time: search for the terms that user typed in
         * good practice to set upper limit
@@ -158,13 +157,17 @@
 * example
     * token: "please divide this sentence into shingles"
     * shingles bigrams: `please divide`, `divide this`, `this sentence`, `sentence into`, and `into shingles`
+* used to improve phrase matching, autocomplete, and relevance scoring
+    * example: "new york pizza"
+        * no distinction between: "new pizza from york" and "york is new to pizza lovers"
+        * with bigrams: "new york" is treated as a phrase token
 * rare phrase matches will have a bigger score boost than more common phrases
 * downside: larger indices
     * pre-bake phrase matching
         * build phrases into the index
         * avoid creating phrases at query time and save some processing time/speed
 * `index-phrases` option on a text field
-    * two-term word combinations (shingles) are indexed into a separate field
+    * automatically generates and indexes two-term word combinations (shingles) in a hidden subfield
     * allows exact phrase queries (no slop) to run more efficiently, at the expense of a larger index
         * slop = how far we allow the terms to be
 * field type `search_as_you_type`
